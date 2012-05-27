@@ -1,6 +1,8 @@
 package org.playground.saxdvr;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -12,7 +14,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.playground.saxdvr.clip.Clip;
 import org.playground.saxdvr.clip.ClipHolder;
@@ -44,7 +45,7 @@ public class TestCanHandlePartialUpdate {
 					"<category>Something else</category>" +
 					"<somethingelsenew>let's see</somethingelsenew>" +
 					"</data>";
-	
+
 	@Test
 	public void testPartialUpdateScenario() throws Exception {
 		final SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -55,31 +56,31 @@ public class TestCanHandlePartialUpdate {
 		final InputSource src = new InputSource(new StringReader(srcXml));
 
 		clipHolder.parse(src);
-		
+
 		assertTrue(recorder.hasRecordingToReplay());
-		
+
 		final Clip clip = clipHolder.getClip();
 		assertNotNull(clip);
-		assertEquals(clip.title, "My Title");
-		assertEquals(clip.category, "Blah!");
-		assertEquals(clip.date, Clip.DATE_FORMAT.parse("12/24/2012"));
-		
-		clip.title = "My Title Updated";
-		clip.category = "Something else";
-		
+		assertEquals(clip.getTitle(), "My Title");
+		assertEquals(clip.getCategory(), "Blah!");
+		assertEquals(clip.getDate(), "12/24/2012");
+
+		clip.setTitle("My Title Updated");
+		clip.setCategory("Something else");
+
 		final ClipSerializer serializer = new ClipSerializer(recorder);
 		serializer.setClip(clip);
-		
+
 		final TransformerFactory xsltFactory = TransformerFactory.newInstance();
 		final Transformer t = xsltFactory.newTransformer();
 		final StringWriter outXmlBuffer = new StringWriter();
 
 		t.transform(new SAXSource(serializer, new InputSource()), new StreamResult(outXmlBuffer));
-		
-		final String resultXml = outXmlBuffer.getBuffer().toString(); 
-		
+
+		final String resultXml = outXmlBuffer.getBuffer().toString();
+
 		logger.debug(resultXml);
-		
+
 		assertEquals(targetXml, resultXml);
 	}
 

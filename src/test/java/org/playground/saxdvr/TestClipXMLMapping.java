@@ -1,15 +1,11 @@
 package org.playground.saxdvr;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
@@ -23,7 +19,6 @@ import org.playground.saxdvr.clip.Clip;
 import org.playground.saxdvr.clip.ClipHolder;
 import org.playground.saxdvr.clip.ClipSerializer;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class TestClipXMLMapping {
 
@@ -57,9 +52,9 @@ public class TestClipXMLMapping {
 		final Clip clip = clipHolder.getClip();
 		assertNotNull("Clip object should not be null", clip);
 
-		assertEquals(clip.title, "My Title");
-		assertEquals(clip.date, Clip.DATE_FORMAT.parse("12/24/2012"));
-		assertEquals(clip.category, "Blah!");
+		assertEquals(clip.getTitle(), "My Title");
+		assertEquals(clip.getDate(), "12/24/2012");
+		assertEquals(clip.getCategory(), "Blah!");
 	}
 
 	@Test

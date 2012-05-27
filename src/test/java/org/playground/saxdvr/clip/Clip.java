@@ -1,18 +1,37 @@
 package org.playground.saxdvr.clip;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Clip {
 
-	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
-
-	public String title;
-	public String category;
-	public Date date;
+	private String title;
+	private String category;
+	private String date;
 
 	public Clip() {
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
 	}
 
 }
