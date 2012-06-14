@@ -1,4 +1,4 @@
-package org.playground.saxdvr.clip;
+package org.playground.saxdvr;
 
 import java.util.Arrays;
 
@@ -11,16 +11,18 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-public class ClipHolder extends XMLFilterImpl {
+public class Parser<T> extends XMLFilterImpl {
 
-	private final Clip clip = new Clip();
+	private final T subject;
 
 	private String context;
 
-	private final Logger logger = LoggerFactory.getLogger(ClipHolder.class);
+	private final Logger logger = LoggerFactory.getLogger(Parser.class);
 
-	public ClipHolder(XMLReader parent) {
+	public Parser(T subject, XMLReader parent) {
 		super(parent);
+
+		this.subject = subject;
 	}
 
 	@Override
@@ -28,7 +30,7 @@ public class ClipHolder extends XMLFilterImpl {
 			throws SAXException {
 		logger.debug("reading start element {}:{}:{}", new Object[] { uri, localName, qName });
 
-		context = PropertyUtils.isWriteable(clip, qName) ? qName : null;
+		context = PropertyUtils.isWriteable(subject, qName) ? qName : null;
 
 		if (context == null) {
 			logger.debug("No field with the name [{}] found in Clip", new Object[] { qName });
@@ -44,8 +46,8 @@ public class ClipHolder extends XMLFilterImpl {
 			logger.debug("parsing out value {} for {}", new Object[] { newValue, context });
 
 			try {
-				BeanUtils.setProperty(clip, context, newValue);
-				
+				BeanUtils.setProperty(subject, context, newValue);
+
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
 				throw new RuntimeException(e);
@@ -58,7 +60,7 @@ public class ClipHolder extends XMLFilterImpl {
 		context = null;
 	}
 
-	public Clip getClip() {
-		return clip;
+	public T getSubject() {
+		return subject;
 	}
 }

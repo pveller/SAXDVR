@@ -27,11 +27,11 @@ public class TestCanRecordAndReplay {
 
 		final String srcXml =
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-						"<data>" +
+						"<clip>" +
 						"<title>My Title</title>" +
 						"<date>12/24/2012</date>" +
 						"<category>Blah!</category>" +
-						"</data>";
+						"</clip>";
 		final InputSource src = new InputSource(new StringReader(srcXml));
 
 		proxy.parse(src);

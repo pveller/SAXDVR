@@ -15,36 +15,33 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.junit.Test;
-import org.playground.saxdvr.clip.Clip;
-import org.playground.saxdvr.clip.ClipHolder;
-import org.playground.saxdvr.clip.ClipSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
 public class TestCanHandlePartialUpdate {
 
-	private final Logger logger = LoggerFactory.getLogger(ClipSerializer.class);
+	private final Logger logger = LoggerFactory.getLogger(TestCanHandlePartialUpdate.class);
 
 	private final String srcXml =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-					"<data>" +
+					"<clip>" +
 					"<title>My Title</title>" +
 					"<somethingnew>let's see</somethingnew>" +
 					"<date>12/24/2012</date>" +
 					"<category>Blah!</category>" +
 					"<somethingelsenew>let's see</somethingelsenew>" +
-					"</data>";
+					"</clip>";
 
 	private final String targetXml =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-					"<data>" +
+					"<clip>" +
 					"<title>My Title Updated</title>" +
 					"<somethingnew>let's see</somethingnew>" +
 					"<date>12/24/2012</date>" +
 					"<category>Something else</category>" +
 					"<somethingelsenew>let's see</somethingelsenew>" +
-					"</data>";
+					"</clip>";
 
 	@Test
 	public void testPartialUpdateScenario() throws Exception {
@@ -52,14 +49,15 @@ public class TestCanHandlePartialUpdate {
 		final SAXParser parser = factory.newSAXParser();
 
 		RecorderProxy recorder = new RecorderProxy(parser.getXMLReader());
-		final ClipHolder clipHolder = new ClipHolder(recorder);
+		final Clip subject = new Clip();
+		final Parser<Clip> clipHolder = new Parser<Clip>(subject, recorder);
 		final InputSource src = new InputSource(new StringReader(srcXml));
 
 		clipHolder.parse(src);
 
 		assertTrue(recorder.hasRecordingToReplay());
 
-		final Clip clip = clipHolder.getClip();
+		final Clip clip = clipHolder.getSubject();
 		assertNotNull(clip);
 		assertEquals(clip.getTitle(), "My Title");
 		assertEquals(clip.getCategory(), "Blah!");
@@ -68,8 +66,8 @@ public class TestCanHandlePartialUpdate {
 		clip.setTitle("My Title Updated");
 		clip.setCategory("Something else");
 
-		final ClipSerializer serializer = new ClipSerializer(recorder);
-		serializer.setClip(clip);
+		final Serializer<Clip> serializer = new Serializer<Clip>(recorder);
+		serializer.setSubject(clip);
 
 		final TransformerFactory xsltFactory = TransformerFactory.newInstance();
 		final Transformer t = xsltFactory.newTransformer();

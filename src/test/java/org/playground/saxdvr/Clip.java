@@ -1,4 +1,4 @@
-package org.playground.saxdvr.clip;
+package org.playground.saxdvr;
 
 
 public class Clip {

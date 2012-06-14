@@ -1,5 +1,6 @@
-package org.playground.saxdvr.clip;
+package org.playground.saxdvr;
 
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -13,50 +14,53 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-public class ClipSerializer extends XMLFilterImpl {
+public class Serializer<T> extends XMLFilterImpl {
 
-	private Clip clip;
+	private T subject;
 	private String context;
 
-	private final Logger logger = LoggerFactory.getLogger(ClipSerializer.class);
+	private final Logger logger = LoggerFactory.getLogger(Serializer.class);
 
-	public ClipSerializer() {
+	public Serializer() {
 		super();
 	}
 
-	public ClipSerializer(XMLReader parent) {
+	public Serializer(XMLReader parent) {
 		super(parent);
 	}
 
-	public void setClip(final Clip clip) {
-		this.clip = clip;
+	public void setSubject(final T subject) {
+		this.subject = subject;
 	}
 
 	@Override
 	public void parse(InputSource input) throws SAXException, IOException {
-		if (clip == null || getParent() != null) {
+		if (subject == null || getParent() != null) {
 			super.parse(input);
 		} else {
-			serializeClip();
+			serializeSubject();
 		}
 	}
 
-	private void serializeClip() throws SAXException {
+	private void serializeSubject() throws SAXException {
+		final String objectName = subject.getClass().getSimpleName().toLowerCase();
+		final PropertyDescriptor[] properties = PropertyUtils.getPropertyDescriptors(subject);
+
 		super.startDocument();
-		super.startElement("", "", "data", new AttributesImpl());
-		super.startElement("", "", "title", new AttributesImpl());
-		serializeField("title");
-		super.endElement("", "", "title");
+		super.startElement("", "", objectName, new AttributesImpl());
+		for (PropertyDescriptor property : properties) {
+			if ("class".equals(property.getName()) && (Class.class == property.getPropertyType())) {
+				continue;
+			}
 
-		super.startElement("", "", "date", new AttributesImpl());
-		serializeField("date");
-		super.endElement("", "", "date");
+			final String propertyName = property.getName();
 
-		super.startElement("", "", "category", new AttributesImpl());
-		serializeField("category");
-		super.endElement("", "", "category");
+			super.startElement("", "", propertyName, new AttributesImpl());
+			serializeField(propertyName);
+			super.endElement("", "", propertyName);
 
-		super.endElement("", "", "data");
+		}
+		super.endElement("", "", objectName);
 		super.endDocument();
 	}
 
@@ -65,7 +69,7 @@ public class ClipSerializer extends XMLFilterImpl {
 			throws SAXException {
 		logger.debug("serializing start element {}:{}:{}", new Object[] { uri, localName, qName });
 
-		context = PropertyUtils.isWriteable(clip, qName) ? qName : null;
+		context = PropertyUtils.isWriteable(subject, qName) ? qName : null;
 
 		if (context == null) {
 			logger.debug("No field with the name [{}] found in Clip", new Object[] { qName });
@@ -94,7 +98,7 @@ public class ClipSerializer extends XMLFilterImpl {
 		String value = "";
 
 		try {
-			value = BeanUtils.getProperty(clip, field);
+			value = BeanUtils.getProperty(subject, field);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}

@@ -15,31 +15,31 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.playground.saxdvr.clip.Clip;
-import org.playground.saxdvr.clip.ClipHolder;
-import org.playground.saxdvr.clip.ClipSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
 public class TestClipXMLMapping {
-
-	private ClipHolder clipHolder;
-	private ClipSerializer serializer;
+	
+	private Parser<Clip> clipHolder;
+	private Serializer<Clip> serializer;
 
 	private final String srcXml =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-					"<data>" +
-					"<title>My Title</title>" +
-					"<date>12/24/2012</date>" +
+					"<clip>" +
 					"<category>Blah!</category>" +
-					"</data>";
+					"<date>12/24/2012</date>" +
+					"<title>My Title</title>" +
+					"</clip>";
 
 	@Before
 	public void setUpParser() throws Exception {
 		final SAXParserFactory factory = SAXParserFactory.newInstance();
 		final SAXParser parser = factory.newSAXParser();
-
-		clipHolder = new ClipHolder(parser.getXMLReader());
-		serializer = new ClipSerializer();
+		
+		final Clip subject = new Clip();
+		clipHolder = new Parser<Clip>(subject, parser.getXMLReader());
+		serializer = new Serializer<Clip>();
 
 		final InputSource src = new InputSource(new StringReader(srcXml));
 
@@ -49,7 +49,7 @@ public class TestClipXMLMapping {
 	@Test
 	public void testCanCreateClipFromXML() throws Exception {
 
-		final Clip clip = clipHolder.getClip();
+		final Clip clip = clipHolder.getSubject();
 		assertNotNull("Clip object should not be null", clip);
 
 		assertEquals(clip.getTitle(), "My Title");
@@ -59,8 +59,8 @@ public class TestClipXMLMapping {
 
 	@Test
 	public void testCanSerializeClipToXML() throws Exception {
-		final Clip clip = clipHolder.getClip();
-		serializer.setClip(clip);
+		final Clip clip = clipHolder.getSubject();
+		serializer.setSubject(clip);
 
 		final TransformerFactory xsltFactory = TransformerFactory.newInstance();
 		final Transformer t = xsltFactory.newTransformer();
@@ -68,8 +68,7 @@ public class TestClipXMLMapping {
 		final StringWriter outXmlBuffer = new StringWriter();
 
 		t.transform(new SAXSource(serializer, new InputSource()), new StreamResult(outXmlBuffer));
-
+		
 		assertEquals(srcXml, outXmlBuffer.getBuffer().toString());
-
 	}
 }
